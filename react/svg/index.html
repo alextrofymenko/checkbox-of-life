@@ -1,0 +1,147 @@
+<html>
+<head>
+    <title>Conway's checkbox of life</title>
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+    <script src="../../assets/js/react-0.14.3.min.js"></script>
+    <script src="../../assets/js/react-dom-0.14.3.min.js"></script>
+    <script src="../../assets/js/browser.min.js"></script>
+</head>
+<body>
+<div id="container">
+</div>
+</body>
+<script type="text/babel">
+  var Game = React.createClass({
+    componentDidMount: function () {
+      this.refs.speedSlider.setAttribute('orient', 'vertical');
+    },
+    getInitialState: function() {
+      var height = 10;
+      var width = 20;
+
+      return {
+        speed: 50,
+        height: height,
+        width: width,
+        board: this.getNewBoard(height, width),
+        isInProgress: false
+      };
+    },
+    getNewBoard: function (height, width, defaultValue) {
+      var board = new Array();
+      for (var h = 0; h < height; h++) {
+        var row = new Array();
+        for (var w = 0; w < width; w++) {
+          row[w] = typeof(defaultValue) === "function" ? defaultValue() : false;
+        }
+        board[h] = row;
+      }
+
+      return board;
+    },
+    tick: function() {
+      var board = new Array();
+
+      for (var h = 0; h < this.state.height; h++) {
+        board[h] = new Array();
+        for (var w = 0; w < this.state.width; w++) {
+          var neighbours = 0;
+          for (var nh = -1; nh <= 1; nh++) {
+            for (var nw = -1; nw <= 1; nw++) {
+              if (nh === 0 && nw === 0)
+                continue;
+
+              var nx = h + nh;
+              if (nx < 0)
+                nx = this.state.height - 1;
+              else if (nx === this.state.height)
+                nx = 0;
+
+              var ny = w + nw;
+              if (ny < 0)
+                ny = this.state.width - 1;
+              else if (ny === this.state.width)
+                ny = 0;
+
+              if (this.state.board[nx][ny])
+                neighbours++;
+            }
+          }
+
+          if (this.state.board[h][w] && neighbours < 2)
+            board[h][w] = false;
+          else if (this.state.board[h][w] && neighbours > 3)
+            board[h][w] = false;
+          else if (!this.state.board[h][w] && neighbours === 3)
+            board[h][w] = true;
+          else
+            board[h][w] = this.state.board[h][w];
+        }
+      }
+
+      this.setState({
+        board: board
+      });
+    },
+    auto: function() {
+      this.interval = setInterval(this.tick, this.state.speed * 10);
+      this.setState({isInProgress: true});
+    },
+    stop: function() {
+      clearInterval(this.interval);
+      this.setState({isInProgress: false});
+    },
+    reset: function() {
+      this.stop();
+      this.setState({board: this.getNewBoard(this.state.height, this.state.width)});
+    },
+    toggleCell: function(x, y, e) {
+      var board = this.state.board;
+      board[x][y] = e.target.checked;
+      this.setState({board: board});
+    },
+    changeSpeed: function (e) {
+      this.setState({speed: e.target.value});
+      if (this.state.isInProgress) {
+        clearInterval(this.interval);
+        this.interval = setInterval(this.tick, this.state.speed * 10);
+      }
+    },
+    randomize: function () {
+      var seed = this.refs.seed.value;
+      var valueFn = function() { return Math.random(1) < seed / 100 };
+      var board = this.getNewBoard(this.state.height, this.state.width, valueFn);
+      this.setState({board: board});
+    },
+    render: function() {
+      return (
+        <div>
+          <h1>Conway&#39;s Hannah of life</h1>
+          <div className="container">
+            <div style={{backgroundImage: "url(../../assets/img/hannah-tile-2.jpg)"}}>
+              <svg height={this.state.height * 50} width={this.state.width * 50}>
+                {this.state.board.map(function(row, rowIndex) {
+                  return row.map(function(column, columnIndex) {
+                    return <rect x={columnIndex * 50} y={rowIndex * 50} height="50" width="50" fill="white" fillOpacity={this.state.board[rowIndex][columnIndex] ? "0" : "1"} />;
+                  }, this);
+                }, this)}
+              </svg>
+            </div>
+            <input type="range" ref="speedSlider" onChange={this.changeSpeed} />
+          </div>
+          <div className="container">
+            {this.state.isInProgress ?
+              <input type="button" value="Stop" onClick={this.stop} /> :
+              [<input type="number" min="1" max="100" defaultValue="25" ref="seed" />,
+              <input type="button" value="Random" onClick={this.randomize} />,
+              <input type="button" value="Reset" onClick={this.reset} />,
+              <input type="button" value="Auto" onClick={this.auto} />,
+              <input type="button" value="Next" onClick={this.tick} />]}
+          </div>
+        </div>);
+    }
+  });
+
+  ReactDOM.render(<Game />, document.getElementById('container'))
+</script>
+</html>
