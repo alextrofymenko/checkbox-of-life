@@ -11,12 +11,12 @@
     <input id="speed" type="range" orient="vertical" />
 </div>
 <div class="container">
-    <input id="seed" type="number" min="1" max="100" value="25" />
-    <input id="random" type="button" value="Random" />
-    <input id="reset" type="button" value="Reset" />
-    <input id="auto" type="button" value="Auto" />
-    <input id="stop" type="button" value="Stop" style="display: none;" />
-    <input id="next" type="button" value="Next" />
+    <input id="seed" type="number" min="1" max="100" value="25" class="not-in-progress" />
+    <input id="random" type="button" value="Random" class="not-in-progress" />
+    <input id="reset" type="button" value="Reset" class="not-in-progress" />
+    <input id="auto" type="button" value="Auto" class="not-in-progress" />
+    <input id="stop" type="button" value="Stop" class="in-progress" />
+    <input id="next" type="button" value="Next" class="not-in-progress" />
 </div>
 </body>
 <script type="text/javascript">
@@ -29,25 +29,21 @@
         });
 
         $('#reset').click(function () {
-            $('#game').html();
-            $('#stop').click();
             game = new Game();
             game.timer = $('#speed').val() * 10;
         });
 
         $('#auto').click(function () {
             game.pulse();
-            $(this).hide();
-            $('#next').hide();
-            $('#stop').show();
+            $('.not-in-progress').hide();
+            $('.in-progress').show();
             $(':checkbox').prop('disabled', true);
         });
 
         $('#stop').click(function () {
             clearTimeout(game.nextPulse);
-            $(this).hide();
-            $('#next').show();
-            $('#auto').show();
+            $('.not-in-progress').show();
+            $('.in-progress').hide();
             $(':checkbox').prop('disabled', false);
         });
 
@@ -64,6 +60,9 @@
         $('#speed').change(function () {
             game.timer = $(this).val() * 10;
         });
+
+        $('.not-in-progress').show();
+        $('.in-progress').hide();
     });
 
     function Game() {

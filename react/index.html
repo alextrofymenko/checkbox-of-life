@@ -102,8 +102,10 @@
     },
     changeSpeed: function (e) {
       this.setState({speed: e.target.value});
-      clearInterval(this.interval);
-      this.interval = setInterval(this.tick, this.state.speed * 10);
+      if (this.state.isInProgress) {
+        clearInterval(this.interval);
+        this.interval = setInterval(this.tick, this.state.speed * 10);
+      }
     },
     randomize: function () {
       var seed = this.refs.seed.value;
